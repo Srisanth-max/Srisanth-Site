@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, MapPin, Send, Instagram, Twitter, AtSign } from 'lucide-react';
+import { Mail, MapPin, Send, Instagram, Twitter, AtSign, Github, Linkedin } from 'lucide-react';
 import { PORTFOLIO_DATA } from '../constants';
 
 const Contact: React.FC = () => {
@@ -71,6 +71,27 @@ const Contact: React.FC = () => {
 
               {/* Socials */}
               <div className="pt-6 flex flex-wrap gap-4">
+                 {PORTFOLIO_DATA.socials.github && (
+                   <a href={PORTFOLIO_DATA.socials.github} target="_blank" rel="noopener noreferrer" className="group">
+                     <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
+                        <Github size={24} />
+                     </div>
+                   </a>
+                 )}
+                 {PORTFOLIO_DATA.socials.linkedin && (
+                   <a href={PORTFOLIO_DATA.socials.linkedin} target="_blank" rel="noopener noreferrer" className="group">
+                     <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-blue-500 group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
+                        <Linkedin size={24} />
+                     </div>
+                   </a>
+                 )}
+                 {PORTFOLIO_DATA.socials.twitter && (
+                   <a href={PORTFOLIO_DATA.socials.twitter} target="_blank" rel="noopener noreferrer" className="group">
+                     <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-blue-400 group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
+                        <Twitter size={24} />
+                     </div>
+                   </a>
+                 )}
                  {PORTFOLIO_DATA.socials.instagram && (
                    <a href={PORTFOLIO_DATA.socials.instagram} target="_blank" rel="noopener noreferrer" className="group">
                      <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-pink-500 group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
@@ -82,13 +103,6 @@ const Contact: React.FC = () => {
                    <a href={PORTFOLIO_DATA.socials.threads} target="_blank" rel="noopener noreferrer" className="group">
                      <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
                         <AtSign size={24} />
-                     </div>
-                   </a>
-                 )}
-                 {PORTFOLIO_DATA.socials.twitter && (
-                   <a href={PORTFOLIO_DATA.socials.twitter} target="_blank" rel="noopener noreferrer" className="group">
-                     <div className="w-14 h-14 rounded-2xl bg-[#1c1c1e] flex items-center justify-center text-gray-400 group-hover:text-blue-400 group-hover:bg-[#2c2c2e] transition-all duration-300 border border-white/5">
-                        <Twitter size={24} />
                      </div>
                    </a>
                  )}
