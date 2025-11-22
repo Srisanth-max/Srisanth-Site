@@ -7,8 +7,8 @@ export const PORTFOLIO_DATA: PortfolioData = {
   tagline: "Exploring the world of technology, one line of code at a time.",
   email: "kottagorakalasrisanth08@gmail.com",
   socials: {
-    github: "",
-    linkedin: "",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com",
     twitter: "https://x.com/HereSrisanth",
     instagram: "https://www.instagram.com/here.srisanth/",
     threads: "https://www.threads.net/@here.srisanth"

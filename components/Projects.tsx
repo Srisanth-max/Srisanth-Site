@@ -5,8 +5,10 @@ import { X, ZoomIn } from 'lucide-react';
 
 const Projects: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Refs for interaction and animation
+  const sectionRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -19,6 +21,32 @@ const Projects: React.FC = () => {
   const projects = PORTFOLIO_DATA.projects;
   const total = projects.length;
   const anglePerItem = 360 / total;
+  
+  // Intersection Observer for scroll-triggered animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+        (entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting) {
+                setIsVisible(true);
+                observer.unobserve(entry.target); // Animate only once
+            }
+        },
+        { threshold: 0.1 } // Trigger when 10% of the section is visible
+    );
+
+    if (sectionRef.current) {
+        observer.observe(sectionRef.current);
+    }
+
+    return () => {
+        if (sectionRef.current) {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            observer.unobserve(sectionRef.current);
+        }
+    };
+  }, []);
+
 
   useEffect(() => {
     const animate = () => {
@@ -75,7 +103,7 @@ const Projects: React.FC = () => {
   };
 
   return (
-    <section id="gallery" className="py-32 bg-black relative overflow-hidden">
+    <section id="gallery" ref={sectionRef} className="py-32 bg-black relative overflow-hidden">
         {/* Background aesthetic elements */}
         <div className="absolute top-0 right-0 w-[60vw] h-[60vw] bg-blue-900/10 rounded-full blur-[150px] pointer-events-none mix-blend-screen animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-[60vw] h-[60vw] bg-purple-900/10 rounded-full blur-[150px] pointer-events-none mix-blend-screen animate-pulse delay-1000"></div>
@@ -124,7 +152,7 @@ const Projects: React.FC = () => {
                 {projects.map((item, index) => (
                     <div 
                         key={item.id}
-                        className="absolute inset-0 rounded-2xl overflow-hidden border border-white/10 bg-[#1c1c1e] shadow-[0_0_30px_rgba(0,0,0,0.8)] cursor-pointer group"
+                        className="absolute inset-0 rounded-2xl overflow-hidden border border-white/10 bg-[#1c1c1e] shadow-[0_0_30px_rgba(0,0,0,0.8)] cursor-pointer group transition-all duration-300 hover:shadow-[0_0_40px_rgba(59,130,246,0.5)]"
                         style={{
                             transform: `rotateY(${index * anglePerItem}deg) translateZ(var(--carousel-radius)) scale(0.9)`, 
                         }}
@@ -132,7 +160,7 @@ const Projects: React.FC = () => {
                     >
                         {/* Inner Container for Animation & Masking */}
                         <div 
-                            className="w-full h-full relative opacity-0 animate-fade-in-up"
+                            className={`w-full h-full relative opacity-0 ${isVisible ? 'animate-fade-in-up' : ''}`}
                             style={{
                                 animationDelay: `${index * 0.15 + 0.3}s`, // Staggered delay
                                 animationFillMode: 'forwards',
@@ -145,7 +173,7 @@ const Projects: React.FC = () => {
                             <img 
                                 src={item.imageUrl} 
                                 alt={item.title} 
-                                className="w-full h-full object-cover select-none pointer-events-none md:pointer-events-auto"
+                                className="w-full h-full object-cover select-none pointer-events-none md:pointer-events-auto transition-transform duration-300 group-hover:scale-105"
                                 loading="lazy" 
                             />
                             <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 px-2">
