@@ -1,15 +1,78 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PORTFOLIO_DATA } from '../constants';
 import { X, ZoomIn } from 'lucide-react';
 
 const Projects: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Determine carousel radius and item sizing based on screen size (simulated logic via CSS/Classes)
+  // Refs for interaction and animation
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const rotationRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const lastRotationRef = useRef(0);
+  const isHoveredRef = useRef(false);
+  const animationFrameRef = useRef<number>(0);
+
+  // Determine carousel configuration
   const projects = PORTFOLIO_DATA.projects;
   const total = projects.length;
   const anglePerItem = 360 / total;
+
+  useEffect(() => {
+    const animate = () => {
+      // Auto-rotate if not interacting
+      if (!isDraggingRef.current && !isHoveredRef.current) {
+         rotationRef.current -= 0.1; // Slow auto-rotation speed
+      }
+      
+      // Apply rotation
+      if (carouselRef.current) {
+         carouselRef.current.style.transform = `rotateY(${rotationRef.current}deg)`;
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationFrameRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameRef.current);
+  }, []);
+
+  // Handler for Mouse Wheel
+  const handleWheel = (e: React.WheelEvent) => {
+    // Add deltaY to rotation (scroll down = rotate left)
+    rotationRef.current += e.deltaY * 0.05;
+  };
+
+  // Handlers for Touch Gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    isDraggingRef.current = true;
+    startXRef.current = e.touches[0].clientX;
+    lastRotationRef.current = rotationRef.current;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDraggingRef.current) return;
+    const currentX = e.touches[0].clientX;
+    const deltaX = currentX - startXRef.current;
+    // Map horizontal swipe distance to rotation angle
+    rotationRef.current = lastRotationRef.current + (deltaX * 0.5);
+  };
+
+  const handleTouchEnd = () => {
+    isDraggingRef.current = false;
+  };
+
+  // Handlers for Mouse Hover
+  const handleMouseEnter = () => {
+    isHoveredRef.current = true;
+  };
+  
+  const handleMouseLeave = () => {
+    isHoveredRef.current = false;
+    isDraggingRef.current = false;
+  };
 
   return (
     <section id="gallery" className="py-32 bg-black relative overflow-hidden">
@@ -27,42 +90,46 @@ const Projects: React.FC = () => {
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-xl font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
              A collection of moments revolving around my journey. <br/>
-             <span className="text-sm opacity-50">(Hover to pause, click to expand)</span>
+             <span className="text-sm opacity-50">(Drag, Scroll, or Hover to interact)</span>
           </p>
         </div>
 
         {/* 3D Circular Gallery Container */}
+        {/* We use CSS Variables for the Radius to easily switch between mobile and desktop sizes via media queries */}
+        <style>{`
+          :root {
+            --carousel-radius: 240px;
+          }
+          @media (min-width: 768px) {
+            :root {
+              --carousel-radius: 450px;
+            }
+          }
+        `}</style>
+
         <div className="perspective-2000 w-full h-[500px] md:h-[600px] flex items-center justify-center relative mt-10 md:mt-0">
             <div 
-                className="relative w-[200px] h-[280px] md:w-[280px] md:h-[380px] preserve-3d animate-spin-slow hover:[animation-play-state:paused]"
+                ref={carouselRef}
+                className="relative w-[200px] h-[280px] md:w-[280px] md:h-[380px] preserve-3d cursor-grab active:cursor-grabbing touch-pan-y"
                 style={{ 
                     transformStyle: 'preserve-3d',
                 }}
+                onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {projects.map((item, index) => (
                     <div 
                         key={item.id}
                         className="absolute inset-0 rounded-2xl overflow-hidden border border-white/10 bg-[#1c1c1e] shadow-[0_0_30px_rgba(0,0,0,0.8)] cursor-pointer group"
                         style={{
-                            transform: `rotateY(${index * anglePerItem}deg) translateZ(280px) scale(0.9)`, 
-                            '--tw-translate-z': '400px',
-                        } as React.CSSProperties}
+                            transform: `rotateY(${index * anglePerItem}deg) translateZ(var(--carousel-radius)) scale(0.9)`, 
+                        }}
                         onClick={() => setSelectedImage(item.imageUrl)}
                     >
-                        {/* Responsive TranslateZ Override */}
-                        <style>{`
-                            @media (max-width: 768px) {
-                                div[style*="rotateY(${index * anglePerItem}deg)"] {
-                                    transform: rotateY(${index * anglePerItem}deg) translateZ(240px) scale(0.8) !important;
-                                }
-                            }
-                            @media (min-width: 769px) {
-                                div[style*="rotateY(${index * anglePerItem}deg)"] {
-                                    transform: rotateY(${index * anglePerItem}deg) translateZ(450px) !important;
-                                }
-                            }
-                        `}</style>
-
                         {/* Inner Container for Animation & Masking */}
                         <div 
                             className="w-full h-full relative opacity-0 animate-fade-in-up"
@@ -78,7 +145,7 @@ const Projects: React.FC = () => {
                             <img 
                                 src={item.imageUrl} 
                                 alt={item.title} 
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover select-none pointer-events-none md:pointer-events-auto"
                                 loading="lazy" 
                             />
                             <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 px-2">
