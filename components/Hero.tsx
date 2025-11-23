@@ -1,10 +1,11 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Code2, Brain, Sparkles } from 'lucide-react';
 import { PORTFOLIO_DATA } from '../constants';
 
 const Hero: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [displayedText, setDisplayedText] = useState('');
 
   const handleScrollToAbout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -14,110 +15,55 @@ const Hero: React.FC = () => {
     }
   };
 
-  // Spider Web / Network Animation
+  // Typewriter Effect Logic
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const text = PORTFOLIO_DATA.tagline;
+    let index = 0;
+    
+    // Initial delay before typing starts to match other animations
+    const startDelay = setTimeout(() => {
+        const typeInterval = setInterval(() => {
+            if (index <= text.length) {
+                setDisplayedText(text.slice(0, index));
+                index++;
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, 50); // Speed of typing
+        
+        return () => clearInterval(typeInterval);
+    }, 1500);
 
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
-    let particles: {x: number, y: number, dx: number, dy: number, r: number}[] = [];
-
-    const initParticles = () => {
-      particles = [];
-      // Number of particles based on width
-      const particleCount = window.innerWidth < 768 ? 40 : 70;
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          dx: (Math.random() - 0.5) * 0.3, // Very slow drift
-          dy: (Math.random() - 0.5) * 0.3,
-          r: Math.random() * 1.5 + 1 // size
-        });
-      }
-    };
-
-    initParticles();
-
-    const drawLine = (p1: any, p2: any) => {
-      const dx = p1.x - p2.x;
-      const dy = p1.y - p2.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDist = 120; // Max distance to form a web line
-
-      if (dist < maxDist) {
-        ctx.beginPath();
-        // Opacity inversely proportional to distance
-        const opacity = (1 - dist / maxDist) * 0.15;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.lineWidth = 0.8;
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      }
-    };
-
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-      
-      particles.forEach((p, index) => {
-        // Move particle
-        p.x += p.dx;
-        p.y += p.dy;
-
-        // Bounce off edges
-        if (p.x < 0 || p.x > width) p.dx *= -1;
-        if (p.y < 0 || p.y > height) p.dy *= -1;
-
-        // Draw particle dot
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.fill();
-
-        // Connect to other particles
-        for (let j = index + 1; j < particles.length; j++) {
-          drawLine(p, particles[j]);
-        }
-      });
-      requestAnimationFrame(animate);
-    };
-
-    const animId = requestAnimationFrame(animate);
-
-    const handleResize = () => {
-      if (canvas) {
-        width = canvas.width = canvas.offsetWidth;
-        height = canvas.height = canvas.offsetHeight;
-        initParticles();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => clearTimeout(startDelay);
   }, []);
 
   return (
     <section id="home" className="relative min-h-screen flex flex-col justify-center pt-24 pb-12 overflow-hidden perspective-1000">
       
-      {/* Canvas for Spider Web Animation */}
-      <canvas 
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none z-0"
-      />
+      {/* CSS Starfield Background */}
+      <div className="absolute inset-0 bg-black z-0">
+         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
+         {/* Simple CSS stars */}
+         {[...Array(20)].map((_, i) => (
+             <div 
+                key={i}
+                className="absolute bg-white rounded-full opacity-0 animate-pulse"
+                style={{
+                    top: `${Math.random() * 100}%`,
+                    left: `${Math.random() * 100}%`,
+                    width: `${Math.random() * 2 + 1}px`,
+                    height: `${Math.random() * 2 + 1}px`,
+                    animationDelay: `${Math.random() * 5}s`,
+                    animationDuration: `${Math.random() * 3 + 2}s`
+                }}
+             ></div>
+         ))}
+      </div>
 
       {/* Background Ambience */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-blue-900/20 rounded-full blur-[100px] animate-blob will-change-transform"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[70vw] h-[70vw] bg-purple-900/20 rounded-full blur-[100px] animate-blob animation-delay-2000 will-change-transform"></div>
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
@@ -127,7 +73,7 @@ const Hero: React.FC = () => {
           {/* Text Content */}
           <div className="flex-1 text-center md:text-left order-2 md:order-1">
             
-            {/* Status Badge - Starts at 0.1s */}
+            {/* Status Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/10 mb-8 animate-fade-in-up opacity-0 hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -136,31 +82,45 @@ const Hero: React.FC = () => {
               <span className="text-xs font-semibold text-gray-300 tracking-wide uppercase">Class 11 Student</span>
             </div>
 
-            {/* Main Title - Starts at 0.4s (Delayed for effect) */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1] animate-fade-in-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-              Hello, I'm <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-shimmer bg-[length:200%_auto]">
-                {PORTFOLIO_DATA.name}
+            {/* Main Title - Staggered Word Animation */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
+              <span className="inline-block animate-fade-in-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
+                Hello,
+              </span>{' '}
+              <span className="inline-block animate-fade-in-up opacity-0" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
+                I'm
+              </span>
+              <br />
+              <span className="inline-block animate-fade-in-up opacity-0" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-shimmer bg-[length:200%_auto]">
+                  {PORTFOLIO_DATA.name}
+                </span>
               </span>
             </h1>
 
-            {/* Subtitle - Starts at 0.6s */}
-            <p className="text-lg md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto md:mx-0 font-light leading-relaxed animate-fade-in-up opacity-0" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
-              {PORTFOLIO_DATA.tagline}
-            </p>
+            {/* Subtitle - Typewriter Effect */}
+            <div className="min-h-[3.5rem] md:min-h-[4rem] mb-10 max-w-2xl mx-auto md:mx-0">
+                <p className="text-lg md:text-2xl text-gray-400 font-light leading-relaxed animate-fade-in-up opacity-0" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
+                <span className="typing-cursor">{displayedText}</span>
+                </p>
+            </div>
 
-            {/* Action Buttons - Starts at 0.8s */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start animate-fade-in-up opacity-0" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
-              <a 
-                href="#about" 
-                onClick={handleScrollToAbout}
-                className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg transition-all hover:scale-105 active:scale-95 w-full sm:w-auto overflow-hidden flex items-center justify-center gap-2 shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  About Me <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </a>
+            {/* Action Buttons */}
+            <div className="flex flex-col items-center md:items-start gap-8 animate-fade-in-up opacity-0" style={{ animationDelay: '1.0s', animationFillMode: 'forwards' }}>
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                <a 
+                    href="#about" 
+                    onClick={handleScrollToAbout}
+                    className="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg transition-all hover:scale-105 active:scale-95 w-full sm:w-auto overflow-hidden flex items-center justify-center gap-2 shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
+                >
+                    <span className="relative z-10 flex items-center gap-2">
+                    About Me <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </a>
+              </div>
+
             </div>
           </div>
 
@@ -169,7 +129,11 @@ const Hero: React.FC = () => {
              {/* Glowing Effect behind image */}
              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/30 to-purple-500/30 rounded-full blur-[60px] transform scale-90 animate-pulse will-change-transform"></div>
              
-             <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 animate-float preserve-3d will-change-transform group">
+             {/* 
+                 Interactive Flip Wrapper
+                 We use group/hero-image to control children, but also apply rotation to this container on hover.
+             */}
+             <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 animate-float preserve-3d will-change-transform group transition-transform duration-1000 ease-in-out hover:[transform:rotateY(360deg)] cursor-pointer">
                 
                 {/* Orbiting Icons Animation Container */}
                 <div className="absolute inset-[-50px] md:inset-[-60px] rounded-full animate-[spin_50s_linear_infinite] preserve-3d will-change-transform">
@@ -200,7 +164,7 @@ const Hero: React.FC = () => {
                 <div className="absolute inset-[-20px] rounded-full border border-white/5 animate-[spin_40s_linear_infinite_reverse] will-change-transform"></div>
                 
                 {/* Profile Image Container with 3D Effect */}
-                <div className="absolute inset-0 rounded-full overflow-hidden border-[6px] border-white/10 glass shadow-2xl z-10 cursor-pointer transform transition-transform duration-500 group-hover:scale-110 group-hover:[transform:rotateY(15deg)_scale(1.1)] group-hover:shadow-blue-500/20 preserve-3d">
+                <div className="absolute inset-0 rounded-full overflow-hidden border-[6px] border-white/10 glass shadow-2xl z-10 transform preserve-3d">
                     <div className="absolute inset-0 bg-black/20"></div>
                     <img 
                         src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgEmX4QstuIhvQf7W7aXw_cPjnx-F8bRbygS7Tt4YveFoWjsD74OAc86wB1nLQkSnQI2TFfH12THe2XtTqvIfpFhHnaWfToc36d7fUaW7XC1VFyDxAc7u3k9xx0uie8_hRYI6fGInEOcIjwAhxtCPOuRhgZN8iinlIHo2xTy7R3QLzTs7OdxLA1R0z4HO4/s1152/1763428929734.jpg" 
